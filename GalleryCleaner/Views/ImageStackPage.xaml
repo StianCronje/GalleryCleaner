@@ -2,8 +2,65 @@
 <ContentPage
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="GalleryCleaner.Views.ImageStackPage">
-    <ContentPage.Content>
-        
-    </ContentPage.Content>
+    xmlns:vm="clr-namespace:GalleryCleaner.ViewModels"
+    x:Class="GalleryCleaner.Views.ImageStackPage"
+    BackgroundColor="#f3f3f3">
+    
+    <ContentPage.BindingContext>
+        <vm:ImageStackViewModel />
+    </ContentPage.BindingContext>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="9*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="9*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Frame Grid.Column="1" Grid.Row="1" x:Name="NextFrame" HasShadow="False" BorderColor="Gray" >
+            <Image Source="{Binding NextImage}" Aspect="AspectFit" />
+        </Frame>
+
+        <Frame Grid.Column="1" Grid.Row="1" x:Name="Frame"
+               HasShadow="False"
+               BackgroundColor="Black"
+               Padding="0">
+            <Frame.GestureRecognizers>
+                <PanGestureRecognizer PanUpdated="PanGestureRecognizer_PanUpdated" />
+            </Frame.GestureRecognizers>
+            <Image Source="{Binding CurrentImage}" Aspect="AspectFit" />
+        </Frame>
+
+        <BoxView x:Name="acceptBox" Opacity="0" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="3">
+            <BoxView.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="LightGreen" Offset="0" />
+                    <GradientStop Color="Transparent" Offset="0.3" />
+                </LinearGradientBrush>
+            </BoxView.Background>
+        </BoxView>
+
+        <BoxView x:Name="rejectBox" Opacity="0" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="3">
+            <BoxView.Background>
+                <LinearGradientBrush StartPoint="1,0" EndPoint="0,0">
+                    <GradientStop Color="LightCoral" Offset="0" />
+                    <GradientStop Color="Transparent" Offset="0.3" />
+                </LinearGradientBrush>
+            </BoxView.Background>
+        </BoxView>
+
+        <BoxView x:Name="specialBox" Opacity="0" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="2">
+            <BoxView.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="LightBlue" Offset="0" />
+                    <GradientStop Color="Transparent" Offset="0.15" />
+                </LinearGradientBrush>
+            </BoxView.Background>
+        </BoxView>
+    </Grid>
 </ContentPage>

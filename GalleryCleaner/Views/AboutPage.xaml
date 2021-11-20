@@ -42,9 +42,21 @@
                     </Label.FormattedText>
                 </Label>
                 <Button Margin="0,10,0,0" Text="Learn more"
-                        Command="{Binding OpenWebCommand}"
+                        Command="{Binding PickImageCommand}"
                         BackgroundColor="{StaticResource Primary}"
                         TextColor="White" />
+                <ListView ItemsSource="{Binding MediaItems}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <StackLayout>
+                                    <Label Text="{Binding Name}" />
+                                    <Image Source="{Binding Image}" />
+                                </StackLayout>
+                            </ViewCell>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </StackLayout>
         </ScrollView>
     </Grid>

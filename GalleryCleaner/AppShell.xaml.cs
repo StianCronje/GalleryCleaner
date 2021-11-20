@@ -13,6 +13,7 @@ namespace GalleryCleaner
             InitializeComponent();
             Routing.RegisterRoute(nameof(ItemDetailPage), typeof(ItemDetailPage));
             Routing.RegisterRoute(nameof(NewItemPage), typeof(NewItemPage));
+            Routing.RegisterRoute(nameof(ImageStackPage), typeof(ImageStackPage));
         }
 
         private async void OnMenuItemClicked(object sender, EventArgs e)
