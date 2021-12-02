@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace GalleryCleaner.Services
 {
-    public interface IPhotoPickerService
+    public interface IPhotoService
     {
-        Task<IEnumerable<MediaItem>> LoadImageAssetsAsync();
+        IAsyncEnumerable<MediaItem> LoadImageAssetsAsync();
         event EventHandler<MediaEventArgs> OnMediaAssetLoaded;
     }
 

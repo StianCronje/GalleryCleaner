@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using GalleryCleaner.ViewModels;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace GalleryCleaner.Views
@@ -58,7 +59,7 @@ namespace GalleryCleaner.Views
                     break;
                 case GestureStatus.Running:
                     _x = _startPosX + e.TotalX;
-                    _y = _startPosY + e.TotalY;
+                    //_y = _startPosY + e.TotalY;
                     _time = DateTime.Now.Millisecond;
                     _deltaX = _x - _prevX;
                     _deltaY = _y - _prevY;
@@ -104,6 +105,8 @@ namespace GalleryCleaner.Views
                     acceptBox.Opacity = 0;
                     rejectBox.Opacity = 0;
                     specialBox.Opacity = 0;
+
+                    HandleNext();
                     break;
                 default:
                     break;
@@ -112,6 +115,15 @@ namespace GalleryCleaner.Views
             _prevX = _x;
             _prevY = _y;
             _prevTime = _time;
+        }
+
+        private void HandleNext()
+        {
+            Task.Run(async () =>
+            {
+                await _viewModel.HandleNext();
+
+            });
         }
 
         double GetRotationAngle(double posX, double posY, double radius)

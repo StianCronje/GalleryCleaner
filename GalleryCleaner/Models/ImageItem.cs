@@ -3,9 +3,10 @@ using Xamarin.Forms;
 
 namespace GalleryCleaner.Models
 {
-    public class ImageItem
+    public class PhotoItem
     {
-        public ImageSource Image { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
+        public ImageSource Image { get; set; }
     }
 }

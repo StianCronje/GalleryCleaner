@@ -14,26 +14,26 @@ namespace GalleryCleaner.ViewModels
 {
     public class AboutViewModel : BaseViewModel
     {
-        public ObservableCollection<ImageItem> MediaItems { get; set; }
-        private readonly IPhotoPickerService _photoPickerService;
+        public ObservableCollection<PhotoItem> MediaItems { get; set; }
+        //private readonly IPhotoPickerService _photoPickerService;
 
         public AboutViewModel()
         {
-            _photoPickerService = DependencyService.Get<IPhotoPickerService>();
+            //_photoPickerService = DependencyService.Get<IPhotoPickerService>();
 
             Title = "About";
             OpenWebCommand = new Command(async () => await Browser.OpenAsync("https://aka.ms/xamarin-quickstart"));
 
-            MediaItems = new ObservableCollection<ImageItem>();
+            MediaItems = new ObservableCollection<PhotoItem>();
             Xamarin.Forms.BindingBase.EnableCollectionSynchronization(MediaItems, null, ObservableCollectionCallback);
-            _photoPickerService.OnMediaAssetLoaded += OnMediaAssetLoaded;
+            //_photoPickerService.OnMediaAssetLoaded += OnMediaAssetLoaded;
         }
 
         private void OnMediaAssetLoaded(object sender, MediaEventArgs e)
         {
             var imageSource = ImageSource.FromStream(() => e.Media.Stream);
 
-            var item = new ImageItem
+            var item = new PhotoItem
             {
                 Name = "test name",
                 Image = imageSource
@@ -60,7 +60,7 @@ namespace GalleryCleaner.ViewModels
             {
                 try
                 {
-                    await _photoPickerService.LoadImageAssetsAsync();
+                    //await _photoPickerService.LoadImageAssetsAsync();
                 }
                 catch (Exception ex)
                 {

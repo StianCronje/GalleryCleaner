@@ -6,21 +6,27 @@ using System.Threading.Tasks;
 using GalleryCleaner.Models;
 using GalleryCleaner.Services;
 using Xamarin.Forms;
+using Dasync.Collections;
+using System.Collections.Generic;
 
 namespace GalleryCleaner.ViewModels
 {
     public class ImageStackViewModel : INotifyPropertyChanged
     {
-        private readonly IPhotoPickerService _photoPickerService;
-        private ImageSource currentImage;
-        private ImageSource nextImage;
+        private readonly IPhotoService _photoPickerService;
+        private PhotoItem currentImage;
+        private PhotoItem nextImage;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private ObservableCollection<ImageItem> _mediaItems { get; set; }
+        private ObservableCollection<PhotoItem> _mediaItems { get; set; }
+        private IAsyncEnumerable<MediaItem> Images;
+
+        private int _skip = 0;
+        private int _take = 1;
 
 
-        public ImageSource CurrentImage
+        public PhotoItem CurrentImage
         {
             get => currentImage; set
             {
@@ -28,40 +34,29 @@ namespace GalleryCleaner.ViewModels
                 OnPropertyChanged();
             }
         }
-        public ImageSource NextImage { get => nextImage; set { nextImage = value;
+        public PhotoItem NextImage { get => nextImage; set { nextImage = value;
                 OnPropertyChanged();
             } }
 
         public ImageStackViewModel()
         {
-            _photoPickerService = DependencyService.Get<IPhotoPickerService>();
+            _photoPickerService = DependencyService.Get<IPhotoService>();
 
-            _mediaItems = new ObservableCollection<ImageItem>();
+            _mediaItems = new ObservableCollection<PhotoItem>();
             BindingBase.EnableCollectionSynchronization(_mediaItems, null, ObservableCollectionCallback);
-            _photoPickerService.OnMediaAssetLoaded += OnMediaAssetLoaded;
         }
 
         public void LoadImages()
         {
-            Task.Run(() => _photoPickerService.LoadImageAssetsAsync());
-        }
-
-        private void OnMediaAssetLoaded(object sender, MediaEventArgs e)
-        {
-            var imageSource = ImageSource.FromStream(() => e.Media.Stream);
-
-            var item = new ImageItem
+            Images = _photoPickerService.LoadImageAssetsAsync();
+            
+            Task.Run(async () =>
             {
-                Name = "test name",
-                Image = imageSource
-            };
-            _mediaItems.Add(item);
-
-            if (CurrentImage == null)
-                CurrentImage = imageSource;
-            else if (NextImage == null)
-                NextImage = imageSource;
+                CurrentImage = await GetNextPhoto();
+                NextImage = await GetNextPhoto();
+            });
         }
+
 
         private void ObservableCollectionCallback(System.Collections.IEnumerable collection, object context, Action accessMethod, bool writeAccess)
         {
@@ -78,5 +73,28 @@ namespace GalleryCleaner.ViewModels
                 handler(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        public async Task HandleNext()
+        {
+            NextImage = await GetNextPhoto();
+        }
+
+        public async Task<PhotoItem> GetNextPhoto()
+        {
+            if (Images == null)
+                return null;
+
+            var image = await Images.Skip(_skip++).Take(_take).FirstOrDefaultAsync();
+
+            var imageSource = ImageSource.FromStream(() => image.Stream);
+
+            var photo = new PhotoItem
+            {
+                Id = image.Id,
+                Name = image.Name,
+                Image = imageSource
+            };
+
+            return photo;
+        }
     }
 }

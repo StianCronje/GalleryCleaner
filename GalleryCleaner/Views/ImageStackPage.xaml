@@ -23,7 +23,7 @@
         </Grid.RowDefinitions>
 
         <Frame Grid.Column="1" Grid.Row="1" x:Name="NextFrame" HasShadow="False" BorderColor="Gray" >
-            <Image Source="{Binding NextImage}" Aspect="AspectFit" />
+            <Image Source="{Binding NextImage.Image}" Aspect="AspectFit" />
         </Frame>
 
         <Frame Grid.Column="1" Grid.Row="1" x:Name="Frame"
@@ -33,7 +33,10 @@
             <Frame.GestureRecognizers>
                 <PanGestureRecognizer PanUpdated="PanGestureRecognizer_PanUpdated" />
             </Frame.GestureRecognizers>
-            <Image Source="{Binding CurrentImage}" Aspect="AspectFit" />
+            <StackLayout>
+                <Image Source="{Binding CurrentImage.Image}" Aspect="AspectFit" />
+                <Label Text="{Binding CurrentImage.Name}" TextColor="White" />
+            </StackLayout>
         </Frame>
 
         <BoxView x:Name="acceptBox" Opacity="0" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="3">
