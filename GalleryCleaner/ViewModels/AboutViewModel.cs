@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using GalleryCleaner.Models;
 using GalleryCleaner.Services;
+using GalleryCleaner.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -15,18 +16,14 @@ namespace GalleryCleaner.ViewModels
     public class AboutViewModel : BaseViewModel
     {
         public ObservableCollection<PhotoItem> MediaItems { get; set; }
-        //private readonly IPhotoPickerService _photoPickerService;
 
         public AboutViewModel()
         {
-            //_photoPickerService = DependencyService.Get<IPhotoPickerService>();
-
             Title = "About";
-            OpenWebCommand = new Command(async () => await Browser.OpenAsync("https://aka.ms/xamarin-quickstart"));
+            OpenImagePageCommand = new Command(async () => await Shell.Current.GoToAsync($"/{nameof(ImageStackPage)}"));
 
             MediaItems = new ObservableCollection<PhotoItem>();
             Xamarin.Forms.BindingBase.EnableCollectionSynchronization(MediaItems, null, ObservableCollectionCallback);
-            //_photoPickerService.OnMediaAssetLoaded += OnMediaAssetLoaded;
         }
 
         private void OnMediaAssetLoaded(object sender, MediaEventArgs e)
@@ -49,24 +46,6 @@ namespace GalleryCleaner.ViewModels
             }
         }
 
-        public ICommand OpenWebCommand { get; }
-        public ICommand PickImageCommand => new Command(async () => await PickImage());
-
-        private async Task PickImage()
-        {
-            var canUsePhotos = await Permissions.CheckStatusAsync<Permissions.Photos>();
-
-            if(canUsePhotos == PermissionStatus.Granted)
-            {
-                try
-                {
-                    //await _photoPickerService.LoadImageAssetsAsync();
-                }
-                catch (Exception ex)
-                {
-
-                }
-            }
-        }
+        public ICommand OpenImagePageCommand { get; }
     }
 }

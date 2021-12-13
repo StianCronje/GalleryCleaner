@@ -3,12 +3,17 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:GalleryCleaner.ViewModels"
+    xmlns:xct="http://xamarin.com/schemas/2020/toolkit"
     x:Class="GalleryCleaner.Views.ImageStackPage"
     BackgroundColor="#f3f3f3">
     
     <ContentPage.BindingContext>
         <vm:ImageStackViewModel />
     </ContentPage.BindingContext>
+
+    <!--<ContentPage.Behaviors>
+        <xct:EventToCommandBehavior EventName="Appearing" Command="{Binding LoadImagesCommand}" />
+    </ContentPage.Behaviors>-->
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -22,11 +27,30 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Frame Grid.Column="1" Grid.Row="1" x:Name="NextFrame" HasShadow="False" BorderColor="Gray" >
+        <!--<Frame Grid.Column="1" Grid.Row="1" x:Name="NextFrame" HasShadow="False" BorderColor="Gray" >
             <Image Source="{Binding NextImage.Image}" Aspect="AspectFit" />
-        </Frame>
+        </Frame>-->
 
-        <Frame Grid.Column="1" Grid.Row="1" x:Name="Frame"
+        <Grid BindableLayout.ItemsSource="{Binding PhotoList}"
+                     Grid.Column="1" Grid.Row="1">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate>
+                    <Frame HasShadow="False"
+                           BackgroundColor="Black"
+                           Padding="0">
+                        <Frame.GestureRecognizers>
+                            <PanGestureRecognizer PanUpdated="PanGestureRecognizer_PanUpdated" />
+                        </Frame.GestureRecognizers>
+                        <StackLayout>
+                            <Image Source="{Binding Image}" Aspect="AspectFit" />
+                            <Label Text="{Binding Name}" TextColor="White" />
+                        </StackLayout>
+                    </Frame>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </Grid>
+
+        <!--<Frame Grid.Column="1" Grid.Row="1" x:Name="Frame"
                HasShadow="False"
                BackgroundColor="Black"
                Padding="0">
@@ -34,10 +58,10 @@
                 <PanGestureRecognizer PanUpdated="PanGestureRecognizer_PanUpdated" />
             </Frame.GestureRecognizers>
             <StackLayout>
-                <Image Source="{Binding CurrentImage.Image}" Aspect="AspectFit" />
+                <Image Source="{Binding CurrentImage.Image, Mode=OneWay}" Aspect="AspectFit" />
                 <Label Text="{Binding CurrentImage.Name}" TextColor="White" />
             </StackLayout>
-        </Frame>
+        </Frame>-->
 
         <BoxView x:Name="acceptBox" Opacity="0" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="3">
             <BoxView.Background>

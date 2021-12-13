@@ -1,81 +1,60 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using GalleryCleaner.Models;
 using GalleryCleaner.Services;
 using Xamarin.Forms;
 using Dasync.Collections;
 using System.Collections.Generic;
+using System.Windows.Input;
+using MvvmHelpers.Commands;
+using MvvmHelpers;
+using System.Diagnostics;
 
 namespace GalleryCleaner.ViewModels
 {
-    public class ImageStackViewModel : INotifyPropertyChanged
+    public class ImageStackViewModel : ObservableObject
     {
         private readonly IPhotoService _photoPickerService;
-        private PhotoItem currentImage;
-        private PhotoItem nextImage;
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private ObservableCollection<PhotoItem> _mediaItems { get; set; }
         private IAsyncEnumerable<MediaItem> Images;
+        private ObservableCollection<PhotoItem> photoList = new ObservableCollection<PhotoItem>();
 
         private int _skip = 0;
         private int _take = 1;
+        private int _stackSize = 1;
 
+        public ICommand LoadImagesCommand;
+        public ICommand HandleNextCommand;
 
-        public PhotoItem CurrentImage
-        {
-            get => currentImage; set
-            {
-                currentImage = value;
-                OnPropertyChanged();
-            }
-        }
-        public PhotoItem NextImage { get => nextImage; set { nextImage = value;
-                OnPropertyChanged();
-            } }
+        public ObservableCollection<PhotoItem> PhotoList { get => photoList; set => SetProperty(ref photoList, value); }
 
         public ImageStackViewModel()
         {
             _photoPickerService = DependencyService.Get<IPhotoService>();
 
-            _mediaItems = new ObservableCollection<PhotoItem>();
-            BindingBase.EnableCollectionSynchronization(_mediaItems, null, ObservableCollectionCallback);
+            LoadImagesCommand = new AsyncCommand(LoadImages);
+            HandleNextCommand = new AsyncCommand(HandleNext);
         }
 
-        public void LoadImages()
+        private async Task LoadImages()
         {
-            Images = _photoPickerService.LoadImageAssetsAsync();
-            
-            Task.Run(async () =>
-            {
-                CurrentImage = await GetNextPhoto();
-                NextImage = await GetNextPhoto();
-            });
-        }
+            Images = _photoPickerService.LoadImageAssets();
 
-
-        private void ObservableCollectionCallback(System.Collections.IEnumerable collection, object context, Action accessMethod, bool writeAccess)
-        {
-            lock (collection)
+            for (int i = 0; i < _stackSize; i++)
             {
-                accessMethod?.Invoke();
+                AddItem(await GetNextPhoto());
             }
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private async Task HandleNext()
         {
-            var handler = PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
+            RemoveItem();
+            AddItem(await GetNextPhoto());
         }
 
-        public async Task HandleNext()
+        public async Task AddNext()
         {
-            NextImage = await GetNextPhoto();
+            AddItem(await GetNextPhoto());
         }
 
         public async Task<PhotoItem> GetNextPhoto()
@@ -83,18 +62,49 @@ namespace GalleryCleaner.ViewModels
             if (Images == null)
                 return null;
 
-            var image = await Images.Skip(_skip++).Take(_take).FirstOrDefaultAsync();
-
-            var imageSource = ImageSource.FromStream(() => image.Stream);
-
-            var photo = new PhotoItem
+            var photo = await Task.Run(async () =>
             {
-                Id = image.Id,
-                Name = image.Name,
-                Image = imageSource
-            };
+                try
+                {
+                    var image = await Images.Skip(_skip++).Take(_take).FirstOrDefaultAsync();
+
+                    if (image == null)
+                        return null;
+
+                    var imageSource = ImageSource.FromStream(() => image.Stream);
+
+                    var photoItem = new PhotoItem
+                    {
+                        Id = image.Id,
+                        Name = image.Name,
+                        Image = imageSource,
+                        Stream = image.Stream
+                    };
+                    return photoItem;
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.WriteLine(ex);
+                    return null;
+                }
+                
+            });
 
             return photo;
+        }
+
+        private void AddItem(PhotoItem item)
+        {
+            if (item == null)
+                return;
+
+            PhotoList.Insert(0, item);
+        }
+
+        private void RemoveItem()
+        {
+            var lastIndex = PhotoList.Count - 1;
+            PhotoList.RemoveAt(lastIndex);
         }
     }
 }

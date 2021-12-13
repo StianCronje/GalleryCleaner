@@ -7,8 +7,7 @@ namespace GalleryCleaner.Services
 {
     public interface IPhotoService
     {
-        IAsyncEnumerable<MediaItem> LoadImageAssetsAsync();
-        event EventHandler<MediaEventArgs> OnMediaAssetLoaded;
+        IAsyncEnumerable<MediaItem> LoadImageAssets();
     }
 
     public class MediaItem

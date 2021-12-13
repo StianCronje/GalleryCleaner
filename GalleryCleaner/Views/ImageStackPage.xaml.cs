@@ -37,25 +37,50 @@ namespace GalleryCleaner.Views
             _rotationRadius = _screenHeight * 2;
 
             _viewModel = this.BindingContext as ImageStackViewModel;
+
+            
         }
 
         protected override void OnAppearing()
         {
             base.OnAppearing();
 
-            _viewModel.LoadImages();
+            //_viewModel.PropertyChanged += _viewModel_PropertyChanged;
+
+            //_viewModel.LoadImagesCommand.Execute(null);
+            //Device.BeginInvokeOnMainThread(() =>
+            //{
+                _viewModel.LoadImagesCommand.Execute(null);
+            //});
         }
+
+        //protected override void OnDisappearing()
+        //{
+        //    base.OnDisappearing();
+
+        //    _viewModel.PropertyChanged -= _viewModel_PropertyChanged;
+        //}
+
+        //private void _viewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        //{
+        //    if (e.PropertyName.Equals(nameof(ImageStackViewModel.CurrentImage)))
+        //    {
+        //        imageSource.SetBinding(Image.SourceProperty, _viewModel.CurrentImage.Image)
+        //    }
+        //}
 
         async void PanGestureRecognizer_PanUpdated(System.Object sender, Xamarin.Forms.PanUpdatedEventArgs e)
         {
-            if (!_canMove)
+                if (!_canMove)
                 return;
 
-            switch (e.StatusType)
+            var frame = sender as Frame;
+
+                switch (e.StatusType)
             {
                 case GestureStatus.Started:
-                    _startPosX = Frame.TranslationX;
-                    _startPosY = Frame.TranslationY;
+                    _startPosX = frame.TranslationX;
+                    _startPosY = frame.TranslationY;
                     break;
                 case GestureStatus.Running:
                     _x = _startPosX + e.TotalX;
@@ -66,13 +91,13 @@ namespace GalleryCleaner.Views
                     _deltaTime = _time - _prevTime;
 
 
-                    Frame.TranslationX = _x;
-                    Frame.TranslationY = _y;
-                    Frame.Rotation = GetRotationAngle(_x, _y, _rotationRadius);
+                    frame.TranslationX = _x;
+                    frame.TranslationY = _y;
+                    frame.Rotation = GetRotationAngle(_x, _y, _rotationRadius);
 
-                    acceptBox.Opacity = -Frame.TranslationX / (_screenWidth / 2);
-                    rejectBox.Opacity = Frame.TranslationX / (_screenWidth / 2);
-                    specialBox.Opacity = -Frame.TranslationY / (_screenHeight / 2);
+                    acceptBox.Opacity = -frame.TranslationX / (_screenWidth / 2);
+                    rejectBox.Opacity = frame.TranslationX / (_screenWidth / 2);
+                    specialBox.Opacity = -frame.TranslationY / (_screenHeight / 2);
                     break;
                 case GestureStatus.Completed:
                     var maxTagetX = _screenWidth;
@@ -86,27 +111,33 @@ namespace GalleryCleaner.Views
                     var targetY = _deltaY * stepsToTarget;
                     var targetTime = _deltaTime * stepsToTarget;
                     uint animTime = Math.Min((uint)targetTime, 350);
-                    
-                    Console.WriteLine($"tx: {targetX}, ty: {targetY}, time: { targetTime}");
 
-                    if(!double.IsInfinity(targetTime) && !double.IsNaN(targetTime) && targetTime > 0)
+                    if (targetTime < 500)
                     {
-                        _canMove = false;
-                        await Task.WhenAll(
-                            Frame.TranslateTo(targetX, targetY, animTime),
-                            Frame.RotateTo(GetRotationAngle(targetX, targetY, _rotationRadius), animTime)
-                        );
-                        _canMove = true;
+                        Console.WriteLine($"tx: {targetX}, ty: {targetY}, time: { targetTime}");
+
+                        if (!double.IsInfinity(targetTime) && !double.IsNaN(targetTime) && targetTime > 0)
+                        {
+                            //_canMove = false;
+                            await Task.WhenAll(
+                                frame.TranslateTo(targetX, targetY, animTime),
+                                frame.RotateTo(GetRotationAngle(targetX, targetY, _rotationRadius), animTime)
+                            );
+                            HandleNext();
+                            //_canMove = true;
+                        }
+
+                    }
+                    else
+                    {
+                        frame.TranslationX = 0;
+                        frame.TranslationY = 0;
+                        frame.Rotation = 0;
                     }
 
-                    Frame.TranslationX = 0;
-                    Frame.TranslationY = 0;
-                    Frame.Rotation = 0;
                     acceptBox.Opacity = 0;
                     rejectBox.Opacity = 0;
                     specialBox.Opacity = 0;
-
-                    HandleNext();
                     break;
                 default:
                     break;
@@ -119,11 +150,16 @@ namespace GalleryCleaner.Views
 
         private void HandleNext()
         {
-            Task.Run(async () =>
-            {
-                await _viewModel.HandleNext();
-
-            });
+            //_viewModel.HandleNext().ConfigureAwait(false);
+            _viewModel.HandleNextCommand.Execute(null);
+            //Task.Run(() =>
+            //{
+            //    _viewModel.AddNextPhotoCommand.Execute(null);
+            //});
+            //Task.Run( async () =>
+            //{
+            //    await _viewModel.HandleNext();
+            //});
         }
 
         double GetRotationAngle(double posX, double posY, double radius)
